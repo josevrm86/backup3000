@@ -9,7 +9,6 @@ const app1 = admin.initializeApp({
   credential: admin.credential.cert(serviceAccount1),
 }, 'app1');
 
-
 const db1 = app1.firestore();
 
 async function listUsers() {
@@ -23,10 +22,8 @@ async function listUsers() {
   });
 }
 
-// Ejecuta backup y luego lista usuarios
-backup()
-  .then(() => listUsers())
-  .catch(err => {
-    console.error(err);
-    process.exit(1);
-  });
+// Ejecuta solo la función para listar usuarios
+listUsers().catch(err => {
+  console.error(err);
+  process.exit(1);
+});
