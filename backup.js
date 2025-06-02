@@ -17,11 +17,13 @@ async function listUsersRealtimeDB() {
   const users = snapshot.val();
   if (!users) {
     console.log('No hay usuarios en la colección.');
+    await app1.delete();
     return;
   }
   Object.entries(users).forEach(([id, data]) => {
     console.log(`ID: ${id} =>`, data);
   });
+  await app1.delete(); // Cierra la conexión con Firebase
 }
 
 // Ejecuta solo la función para listar usuarios en Realtime Database
