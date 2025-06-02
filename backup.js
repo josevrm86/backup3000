@@ -1,5 +1,5 @@
-// backup.js
 const admin = require('firebase-admin');
+const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 
 // Carga las credenciales desde variables de entorno
@@ -12,7 +12,7 @@ const app1 = admin.initializeApp({
 
 const db = app1.database();
 
-async function listUsersRealtimeDB() {
+async function listAndBackupUsers() {
   const snapshot = await db.ref('usuarios').once('value');
   const users = snapshot.val();
   if (!users) {
@@ -20,14 +20,25 @@ async function listUsersRealtimeDB() {
     await app1.delete();
     return;
   }
-  Object.entries(users).forEach(([id, data]) => {
-    console.log(`ID: ${id} =>`, data);
-  });
+
+  // Prepara el backup
+  const backupData = {
+    uuid: uuidv4(),
+    usuarios: users
+  };
+
+  // Guarda el backup en la colección "backups"
+  const backupsRef = db.ref('backups');
+  const newBackupRef = backupsRef.push();
+  await newBackupRef.set(backupData);
+
+  console.log('Backup guardado correctamente:', backupData.uuid);
+
   await app1.delete(); // Cierra la conexión con Firebase
 }
 
-// Ejecuta solo la función para listar usuarios en Realtime Database
-listUsersRealtimeDB().catch(err => {
+// Ejecuta la función
+listAndBackupUsers().catch(err => {
   console.error(err);
   process.exit(1);
 });
