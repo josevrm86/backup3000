@@ -7,23 +7,25 @@ const serviceAccount1 = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
 const app1 = admin.initializeApp({
   credential: admin.credential.cert(serviceAccount1),
+  databaseURL: 'https://destinosagentes-default-rtdb.firebaseio.com/'
 }, 'app1');
 
-const db1 = app1.firestore();
+const db = app1.database();
 
-async function listUsers() {
-  const snapshot = await db1.collection('usuarios').get();
-  if (snapshot.empty) {
+async function listUsersRealtimeDB() {
+  const snapshot = await db.ref('usuarios').once('value');
+  const users = snapshot.val();
+  if (!users) {
     console.log('No hay usuarios en la colección.');
     return;
   }
-  snapshot.forEach(doc => {
-    console.log(`ID: ${doc.id} =>`, doc.data());
+  Object.entries(users).forEach(([id, data]) => {
+    console.log(`ID: ${id} =>`, data);
   });
 }
 
-// Ejecuta solo la función para listar usuarios
-listUsers().catch(err => {
+// Ejecuta solo la función para listar usuarios en Realtime Database
+listUsersRealtimeDB().catch(err => {
   console.error(err);
   process.exit(1);
 });
