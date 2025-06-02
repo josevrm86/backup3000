@@ -24,7 +24,8 @@ async function listAndBackupUsers() {
   // Prepara el backup
   const backupData = {
     uuid: uuidv4(),
-    usuarios: users
+    usuarios: users,
+    timestamp: new Date().toISOString()
   };
 
   // Guarda el backup en la colección "backups"
