@@ -12,6 +12,27 @@ const app1 = admin.initializeApp({
 
 const db = app1.database();
 
+async function deleteOldBackups() {
+  const backupsRef = db.ref('backups');
+  const snapshot = await backupsRef.once('value');
+  const now = Date.now();
+  const fiveHoursMs = 5 * 60 * 60 * 1000;
+  const deletions = [];
+
+  snapshot.forEach(child => {
+    const backup = child.val();
+    if (backup.timestamp) {
+      const backupTime = new Date(backup.timestamp).getTime();
+      if (now - backupTime > fiveHoursMs) {
+        deletions.push(child.ref.remove());
+      }
+    }
+  });
+
+  await Promise.all(deletions);
+  console.log(`Backups antiguos eliminados: ${deletions.length}`);
+}
+
 async function listAndBackupUsers() {
   const snapshot = await db.ref('usuarios').once('value');
   const users = snapshot.val();
@@ -34,6 +55,8 @@ async function listAndBackupUsers() {
   await newBackupRef.set(backupData);
 
   console.log('Backup guardado correctamente:', backupData.uuid);
+
+  await deleteOldBackups();
 
   await app1.delete(); // Cierra la conexión con Firebase
 }
